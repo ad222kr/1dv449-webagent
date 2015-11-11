@@ -9,14 +9,15 @@ class ScrapeController {
     private $scraper;
     private $view;
 
-    public function __construct(\view\FormView $view, \model\Scraper $scraper) {
+    public function __construct(\view\FormView $view) {
         $this->view = $view;
-        $this->scraper = $scraper;
     }
 
     public function doControl() {
         if ($this->view->userPressedScrape()) {
-            // Change view to scrapeview
+            $url = $this->view->getUrl();
+            $this->scraper = new \model\Scraper($url);
+            $this->scraper->scrape();
             $this->view = new ScrapeView();
         }
 

@@ -13,8 +13,7 @@ error_reporting(E_ALL);
 
 $lv = new \view\LayoutView();
 $fv = new \view\FormView();
-$scr = new \model\Scraper();
-$ctrl = new \controller\ScrapeController($fv, $scr);
+$ctrl = new \controller\ScrapeController($fv);
 
 $ctrl->doControl();
 
