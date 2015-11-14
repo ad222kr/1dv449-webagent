@@ -4,6 +4,12 @@ namespace model;
 
 class Scraper {
 
+    private static $frontPageQuery = '//li/a';
+    private static $calendarFronPageQuery = '//div[@class="col s12 center"]//li/a';
+
+
+    private $okDays = array();
+
     /**
      * The url scraping should start with
      * @var string
@@ -18,7 +24,25 @@ class Scraper {
     }
 
     public function scrape() {
-        $this->getLinksToApp($this->url);
+        $frontPageNodes = $this->getDOMNodeList($this->url, self::$frontPageQuery);
+        $links = array();
+
+        foreach($frontPageNodes as $node) {
+            $links[] = $node->getAttribute("href");
+        }
+
+        $this->doCalendar($links[0]);
+}
+
+
+    private function doCalendar($href) {
+        $calendareNodes = $this->getDOMNodeList($this->url . $href, self::$calendarFronPageQuery);
+        foreach($calendareNodes as $node) {
+            $tableHead = $this->getDOMNodeList($this->url . $href . "/" . $node->getAttribute("href"),
+                                                        '//table//thead/th');
+            //TODO: scrape tableBody and compare to tHead
+
+        }
     }
 
     /**
@@ -32,6 +56,8 @@ class Scraper {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+
 
         $data = curl_exec($ch);
         curl_close($ch);
@@ -40,19 +66,15 @@ class Scraper {
         $domDoc = new \DOMDocument();
         if ($domDoc->loadHTML($data)){
             return new \DOMXPath($domDoc);
+        } else {
+            die("Fel vid inläsning av html-dokument");
         }
 
     }
 
-    private function getLinksToApp($url) {
+
+    private function getDOMNodeList($url, $query) {
         $xpath = $this->getDOMXPath($url);
-        $links = $xpath->query('//li/a');
-
-        var_dump($links);
+        return $xpath->query($query);
     }
-
-
-
-
-
 }

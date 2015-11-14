@@ -32,7 +32,7 @@ class LayoutView  {
         foreach (self::$css as $styleSheet) {
             $ret .= '<link rel="stylesheet" href="' . $styleSheet . '">';
         }
-        return $ret;
+        //return $ret;
     }
     /**
      * @param $html - Html to be rendered (response of the view-classes)
