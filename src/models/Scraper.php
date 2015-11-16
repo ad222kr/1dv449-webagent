@@ -43,12 +43,12 @@ class Scraper {
 
         $dayOptions = $this->filterDisabled($this->getDOMNodeList($url, '//select[@id="day"]/option'));
         $movieOptions = $this->filterDisabled($this->getDOMNodeList($url, '//select[@id="movie"]/option'));
-
+        
         foreach($movieOptions as $movieOpt) {
 
             foreach ($dayOptions as $dayOpt) {
-                $jsonMovies = json_decode($this->getPageData($url."/check?day=" .
-                                                       $dayOpt->getAttribute("value") . "&movie=" . $movieOpt->getAttribute("value")));
+                $jsonMovies = json_decode($this->getPageData($url."/check?day=" .$dayOpt->getAttribute("value") .
+                                                             "&movie=" . $movieOpt->getAttribute("value")));
                 foreach ($jsonMovies as $jsonMovie) {
                     if ($jsonMovie->status === 1) {
                         $movie = new Movie();
