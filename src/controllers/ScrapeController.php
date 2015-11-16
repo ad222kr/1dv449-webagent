@@ -15,11 +15,13 @@ class ScrapeController {
 
     public function doControl() {
         if ($this->view->userPressedScrape()) {
-            $url = $this->view->getUrl();
-            $this->scraper = new \model\Scraper($url);
-            $this->scraper->scrape();
-            $this->view = new ScrapeView();
+           //TODO: Move code here, now outside to not push button everytime
         }
+
+        $url = $this->view->getUrl();
+        $this->scraper = new \model\Scraper($url);
+        $this->scraper->scrape();
+        $this->view = new ScrapeView();
 
     }
 

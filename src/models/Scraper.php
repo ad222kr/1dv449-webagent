@@ -19,7 +19,7 @@ class Scraper {
     private $curlOptions;
 
     public function __construct($url) {
-        $this->url = $url;
+        $this->url = "localhost:8080"; //$url;
 
     }
 
@@ -37,13 +37,46 @@ class Scraper {
 
     private function doCalendar($href) {
         $calendareNodes = $this->getDOMNodeList($this->url . $href, self::$calendarFronPageQuery);
+
+        $calendars = array();
+
+
         foreach($calendareNodes as $node) {
             $tableHead = $this->getDOMNodeList($this->url . $href . "/" . $node->getAttribute("href"),
-                                                        '//table//thead/th');
-            //TODO: scrape tableBody and compare to tHead
+                                                        '//table//thead//tr//th');
+
+            $tableBody = $this->getDOMNodeList($this->url . $href . "/" . $node->getAttribute("href"),
+                                               '//table//tbody//tr//td');
+
+            $calendars[] = $this->getCalendarArray($tableHead, $tableBody);
+
 
         }
+
+        foreach($calendars as $key => $val) {
+            var_dump($key);
+            echo " ";
+            var_dump($val);
+            echo "</br>";
+        }
+
+        $availableDays = call_user_func_array('array_intersect_assoc', $calendars);
+
+        var_dump($availableDays);
+
     }
+
+    private function getCalendarArray(\DOMNodeList $tableHead, \DOMNodeList $tableBody) {
+        $calendar = array();
+
+        for ($i = 0; $i < $tableHead->length; $i++) {
+            $calendar[$tableHead->item($i)->nodeValue] = strtolower($tableBody->item($i)->nodeValue);
+
+        }
+        return $calendar;
+    }
+
+
 
     /**
      * Takes an url to a webpage and makes a DOMXPatch of it.
