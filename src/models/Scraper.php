@@ -55,7 +55,7 @@ class Scraper {
 
         $this->scrapeMovieSuggestions($links[1]);
 
-        $this->dinnerTableSuggestions = $this->scrapeDinnerTableSuggestions($links[2]);
+        $this->scrapeDinnerTableSuggestions($links[2]);
     }
 
     /**
@@ -102,7 +102,7 @@ class Scraper {
                     $dinnerStartTime = substr($dinnerTime->getAttribute("value"), 3, 2);
                     $movieTime = substr($suggestion->getTime(), 0, 2);
                     if (intval($movieTime) + 2 <= intval($dinnerStartTime)) {
-                        $suggestion->addAvailableDinnerTime(strtotime($dinnerStartTime . ":00"));
+                        $suggestion->addAvailableDinnerTime(strtotime($dinnerStartTime . ":00")); //variable is w/o seconds
                     }
                 }
             }
@@ -144,9 +144,9 @@ class Scraper {
                             . "&movie=" . $movieOpt->getAttribute("value")));
 
                         foreach ($jsonMovies as $jsonMovie) {
-                            if ($jsonMovie->status === 1) {
-                                $this->movieSuggestions[] = new BookingSuggestion($movieOpt->nodeValue, $dayOpt->nodeValue,
-                                    $jsonMovie->time);
+                            if ($jsonMovie->status === 1) { //status == 1 indicates there are seats left
+                                $this->movieSuggestions[] = new BookingSuggestion($movieOpt->nodeValue,
+                                    $dayOpt->nodeValue, $jsonMovie->time);
                             }
                         }
                     }
@@ -174,7 +174,7 @@ class Scraper {
 
         $days = call_user_func_array('array_intersect_assoc', $calendars);
         foreach ($days as $key => $value) {
-            $this->availableDays[] = $key; // Key is the day, value is "OK"
+            $this->availableDays[] = $key; // Key is the day, value is "OK". Easier to work with it without key
         }
     }
 
