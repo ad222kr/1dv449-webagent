@@ -45,7 +45,7 @@ class Scraper {
      */
     public function __construct($url) {
         libxml_use_internal_errors(TRUE); // hides errors from MS_word generated shit
-        $this->url = $url;
+        $this->url = preg_replace('{/$}', '', $url);
     }
 
     public function scrape() {
