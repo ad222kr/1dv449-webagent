@@ -18,12 +18,24 @@ class ScrapeView {
         foreach ($this->movies as $movie) {
 
             $html.= "<li>
-                        Filmen ". $movie->getName() . " klockan " . $movie->getTime() . " på " . $movie->getDay() . "
-                        <a href='#'>Välj denna och boka bord</a>";
+                        Filmen ". $movie->getMovieName() . " klockan " . $movie->getTime() . " på " . $movie->getDay() .
+                        ". Följande tider finns tillgänliga på Zekes Restaurang";
 
+            $html.= "<ul>";
+
+            if (empty($movie->getAvailableDinnerTimes())){
+                $html.= "<li>Inga tider finns</li>";
+            }
+            else {
+                foreach ($movie->getAvailableDinnerTimes() as $time) {
+
+                    $html.= "<li>" . $time . "</li>";
+
+                }
+            }
+
+            $html.= "</ul></li>";
         }
-
         return $html;
     }
-
 }

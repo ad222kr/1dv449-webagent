@@ -2,7 +2,7 @@
 
 namespace model;
 
-require_once("src/models/Movie.php");
+require_once("src/models/BookingSuggestion.php");
 
 class Scraper {
 
@@ -24,7 +24,7 @@ class Scraper {
     private $availableDays = array();
 
     /**
-     * @var array [\model\Movie]
+     * @var array [\model\BookingSuggestion]
      */
     private $movieSuggestions = array();
 
@@ -44,15 +44,16 @@ class Scraper {
      * @param $url - string
      */
     public function __construct($url) {
+        libxml_use_internal_errors(TRUE); // hides errors from MS_word generated shit
         $this->url = "localhost:8080"; //$url;
     }
 
     public function scrape() {
         $links = $this->scrapeFrontPageLinks();
 
-        $this->availableDays = $this->scrapeAvailableDays($links[0]);
+        $this->scrapeAvailableDays($links[0]);
 
-        $this->movieSuggestions = $this->scrapeMovieSuggestions($links[1]);
+        $this->scrapeMovieSuggestions($links[1]);
 
         $this->dinnerTableSuggestions = $this->scrapeDinnerTableSuggestions($links[2]);
     }
@@ -75,6 +76,36 @@ class Scraper {
 
     private function scrapeDinnerTableSuggestions($href) {
         $url = $this->url . $href;
+
+        foreach ($this->availableDays as $day) {
+            $dayPrefix = $this->getDayPrefix($day);
+
+
+            $dinnerTimes = $this->getDOMNodeList($url, '//input[contains(@value, "' . $dayPrefix .'")]');
+            foreach ($this->movieSuggestions as $suggestion) {
+                if ($suggestion->getDay() === $day) {
+                    foreach($dinnerTimes as $dinnerTime) {
+                        $dinnerStartTime = substr($dinnerTime->getAttribute("value"), 3, 2);
+                        $movieTime = substr($suggestion->getTime(), 0, 2);
+                        if (intval($movieTime) + 2 <= intval($dinnerStartTime)) {
+                            $suggestion->addAvailableDinnerTime(strtotime($dinnerStartTime . ":00"));
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function getDayPrefix($day) {
+        switch($day) {
+            case "Fredag":
+                return "fre";
+            case "Lördag":
+                return "lor";
+            case "Söndag":
+                return "son";
+        }
     }
 
     /**
@@ -83,25 +114,23 @@ class Scraper {
      */
     private function scrapeMovieSuggestions($href) {
         $url = $this->url . $href;
-        $movies = array();
 
         $dayOptions = $this->getDOMNodeList($url, self::$moviePageDayQuery);
         $movieOptions = $this->getDOMNodeList($url, self::$moviePageMovieQuery);
 
         foreach($movieOptions as $movieOpt) {
             foreach ($dayOptions as $dayOpt) {
-                foreach ($this->availableDays as $key => $value) {
-                    if ($key === $dayOpt->nodeValue) {
+                foreach ($this->availableDays as $day) {
+                    if ($day === $dayOpt->nodeValue) {
                         $jsonMovies = json_decode($this->getPageData($url."/check?day=" .$dayOpt->getAttribute("value")
                             . "&movie=" . $movieOpt->getAttribute("value")));
 
                         foreach ($jsonMovies as $jsonMovie) {
                             if ($jsonMovie->status === 1) {
-                                $movies[] = new Movie($movieOpt->nodeValue, $dayOpt->nodeValue, $jsonMovie->time);
+                                $this->movieSuggestions[] = new BookingSuggestion($movieOpt->nodeValue, $dayOpt->nodeValue,
+                                    $jsonMovie->time);
                             }
-
                         }
-
                     }
                 }
             }
@@ -125,7 +154,10 @@ class Scraper {
             $calendars[] = $this->getCalendarArray($tableHead, $tableBody);
         }
 
-        return call_user_func_array('array_intersect_assoc', $calendars);
+        $days = call_user_func_array('array_intersect_assoc', $calendars);
+        foreach ($days as $key => $value) {
+            $this->availableDays[] = $key; // Key is the day, value is "OK"
+        }
     }
 
     /**

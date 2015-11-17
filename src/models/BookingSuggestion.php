@@ -9,14 +9,14 @@
 namespace model;
 
 
-class Movie {
+class BookingSuggestion {
 
 
 
     /**
      * @var String
      */
-    private $name;
+    private $movieName;
 
     /**
      * @var String
@@ -28,15 +28,20 @@ class Movie {
      */
     private $time;
 
+    /**
+     * @var array time
+     */
+    private $availableDinnerTimes = array();
+
 
     public function __construct($name, $day, $time) {
-        $this->name = $name;
+        $this->movieName = $name;
         $this->day = $day;
         $this->time = $time;
     }
 
-    public function getName() {
-        return $this->name;
+    public function getMovieName() {
+        return $this->movieName;
     }
 
     public function getDay() {
@@ -45,6 +50,14 @@ class Movie {
 
     public function getTime() {
         return $this->time;
+    }
+
+    public function addAvailableDinnerTime($time) {
+        $this->availableDinnerTimes[] = date( "H:i", $time);
+    }
+
+    public function getAvailableDinnerTimes() {
+        return $this->availableDinnerTimes;
     }
 
 
