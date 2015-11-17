@@ -21,7 +21,7 @@ class ScrapeController {
         $url = $this->view->getUrl();
         $this->scraper = new \model\Scraper($url);
         $this->scraper->scrape();
-        $this->view = new ScrapeView();
+        $this->view = new ScrapeView($this->scraper->getMovieSuggestions());
 
     }
 

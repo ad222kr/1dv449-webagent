@@ -11,21 +11,41 @@ namespace model;
 
 class Movie {
 
-    /**
-     * @var String
-     */
-    public $name;
+
 
     /**
      * @var String
      */
-    public $day;
+    private $name;
 
     /**
-     * @var var Bool
+     * @var String
      */
-    public $time;
+    private $day;
 
+    /**
+     * @var string
+     */
+    private $time;
+
+
+    public function __construct($name, $day, $time) {
+        $this->name = $name;
+        $this->day = $day;
+        $this->time = $time;
+    }
+
+    public function getName() {
+        return $this->name;
+    }
+
+    public function getDay() {
+        return $this->day;
+    }
+
+    public function getTime() {
+        return $this->time;
+    }
 
 
 }
