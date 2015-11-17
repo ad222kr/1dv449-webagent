@@ -56,6 +56,12 @@ class BookingSuggestion {
         $this->availableDinnerTimes[] = date( "H:i", $time);
     }
 
+    public function setAvailableDinnerTimes($times) {
+        assert(is_array($times));
+
+        $this->availableDinnerTimes = $times;
+    }
+
     public function getAvailableDinnerTimes() {
         return $this->availableDinnerTimes;
     }

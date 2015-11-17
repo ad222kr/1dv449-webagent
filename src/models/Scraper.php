@@ -45,7 +45,7 @@ class Scraper {
      */
     public function __construct($url) {
         libxml_use_internal_errors(TRUE); // hides errors from MS_word generated shit
-        $this->url = "localhost:8080"; //$url;
+        $this->url = $url;
     }
 
     public function scrape() {
@@ -74,29 +74,45 @@ class Scraper {
         return $links;
     }
 
+    /**
+     * @param $href - part of the url to the dinner-page
+     */
     private function scrapeDinnerTableSuggestions($href) {
         $url = $this->url . $href;
 
         foreach ($this->availableDays as $day) {
             $dayPrefix = $this->getDayPrefix($day);
 
-
             $dinnerTimes = $this->getDOMNodeList($url, '//input[contains(@value, "' . $dayPrefix .'")]');
-            foreach ($this->movieSuggestions as $suggestion) {
-                if ($suggestion->getDay() === $day) {
-                    foreach($dinnerTimes as $dinnerTime) {
-                        $dinnerStartTime = substr($dinnerTime->getAttribute("value"), 3, 2);
-                        $movieTime = substr($suggestion->getTime(), 0, 2);
-                        if (intval($movieTime) + 2 <= intval($dinnerStartTime)) {
-                            $suggestion->addAvailableDinnerTime(strtotime($dinnerStartTime . ":00"));
+            $this->setAvailableTimesForMovieSuggestion($dinnerTimes, $day);
+        }
+    }
 
-                        }
+    /**
+     * Takes a \DomNodeList of available dinnertimes. Checks that the day is right and that
+     * time of reservation is 2 hours after movie. Adds correct times to booking-suggestion.
+     *
+     * @param \DOMNodeList $dinnerTimes
+     * @param $day
+     */
+    private function setAvailableTimesForMovieSuggestion(\DOMNodeList $dinnerTimes, $day) {
+        foreach ($this->movieSuggestions as $suggestion) {
+            if ($suggestion->getDay() === $day) {
+                foreach ($dinnerTimes as $dinnerTime) {
+                    $dinnerStartTime = substr($dinnerTime->getAttribute("value"), 3, 2);
+                    $movieTime = substr($suggestion->getTime(), 0, 2);
+                    if (intval($movieTime) + 2 <= intval($dinnerStartTime)) {
+                        $suggestion->addAvailableDinnerTime(strtotime($dinnerStartTime . ":00"));
                     }
                 }
             }
         }
     }
 
+    /**
+     * @param $day string
+     * @return string
+     */
     private function getDayPrefix($day) {
         switch($day) {
             case "Fredag":
@@ -113,6 +129,8 @@ class Scraper {
      * @return array of \model\Movie with suggestions
      */
     private function scrapeMovieSuggestions($href) {
+
+        //TODO: this would need refactoring
         $url = $this->url . $href;
 
         $dayOptions = $this->getDOMNodeList($url, self::$moviePageDayQuery);
@@ -234,6 +252,9 @@ class Scraper {
         return $data;
     }
 
+    /**
+     * @return array
+     */
     public function getMovieSuggestions() {
         return $this->movieSuggestions;
     }
